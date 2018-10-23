@@ -1,0 +1,24 @@
+{
+    "name": "waughj/verified-arguments",
+    "description": "Safer & simpler way to handle verifying an array o' arguments by existence & type.",
+    "keywords": [ "arguments", "array", "safety" ],
+    "license": "GPL-2.0-or-later",
+    "authors": [
+        {
+            "name": "Jaimeson Waugh",
+            "email": "waughjai@gmail.com"
+        }
+    ],
+    "type": "library",
+    "require": {
+		"php": ">=7.0"
+    },
+    "require-dev": {
+		"phpunit/phpunit": "6.*"
+    },
+    "autoload": {
+        "psr-4": {
+            "WaughJ\\VerifiedArguments\\": "src/"
+        }
+    }
+}
