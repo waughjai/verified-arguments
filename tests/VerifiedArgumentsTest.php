@@ -42,5 +42,8 @@ class VerifiedArgumentsTest extends TestCase
 
 		$snd_args = new VerifiedArguments( [ "name" => new DateTime( "10/23/2018" ) ], [ "name" => [ "type" => \DateTime::class, "value" => false ]]);
 		$this->assertEquals( $snd_args->get( "name" ), new DateTime( "10/23/2018" ) );
+
+		$trd_args = new VerifiedArguments( [ "name" => new DateTime( "10/23/2018" ) ], [ "name" => [ "type" => "object", "value" => false ]]);
+		$this->assertEquals( $trd_args->get( "name" ), new DateTime( "10/23/2018" ) );
 	}
 }
