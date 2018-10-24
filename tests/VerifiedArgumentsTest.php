@@ -9,7 +9,7 @@ class VerifiedArgumentsTest extends TestCase
 	{
 		$hash = [ "name" => "Jaimeson", "age" => 27 ];
 		$args = new VerifiedArguments( $hash );
-		$this->assertEquals( $args->get( "expertise" ), null );
+		$this->assertNull( $args->get( "expertise" ) );
 	}
 
 	public function testRightArgument() : void
@@ -27,6 +27,20 @@ class VerifiedArgumentsTest extends TestCase
 		];
 		$hash = [ "name" => "Jaimeson", "age" => 27 ];
 		$args = new VerifiedArguments( $hash, $expected_args );
-		$this->assertEquals( $args->get( "name" ), null );
+		$this->assertNull( $args->get( "name" ) );
+	}
+
+	public function testWrongArgumentTypeDefaultValue() : void
+	{
+		$expected_args =
+		[
+			"name" => [ "type" => "integer", "value" => "nada" ]
+		];
+		$hash = [ "name" => "Jaimeson", "age" => 27 ];
+		$args = new VerifiedArguments( $hash, $expected_args );
+		$this->assertEquals( $args->get( "name" ), "nada" );
+
+		$snd_args = new VerifiedArguments( [ "name" => new DateTime( "10/23/2018" ) ], [ "name" => [ "type" => \DateTime::class, "value" => false ]]);
+		$this->assertEquals( $snd_args->get( "name" ), new DateTime( "10/23/2018" ) );
 	}
 }
