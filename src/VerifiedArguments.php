@@ -45,22 +45,6 @@ namespace WaughJ\VerifiedArguments
 
 
 		//
-		//  PROTECTED
-		//
-		/////////////////////////////////////////////////////////
-
-			protected static function getType( $tested ) : string
-			{
-				if ( is_object( $tested ) )
-				{
-					return get_class( $tested );
-				}
-				return gettype( $tested );
-			}
-
-
-
-		//
 		//  PRIVATE
 		//
 		/////////////////////////////////////////////////////////
