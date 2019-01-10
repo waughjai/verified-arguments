@@ -42,6 +42,11 @@ namespace WaughJ\VerifiedArguments
 				return ( array_key_exists( $key, $this->args ) ) ? $this->args[ $key ] : null;
 			}
 
+			public function getList() : array
+			{
+				return $this->args;
+			}
+
 
 
 		//

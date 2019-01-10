@@ -46,4 +46,11 @@ class VerifiedArgumentsTest extends TestCase
 		$trd_args = new VerifiedArguments( [ "name" => new DateTime( "10/23/2018" ) ], [ "name" => [ "type" => "object", "value" => false ]]);
 		$this->assertEquals( $trd_args->get( "name" ), new DateTime( "10/23/2018" ) );
 	}
+
+	public function testGetList() : void
+	{
+		$hash = [ "name" => "Jaimeson", "age" => 27 ];
+		$args = new VerifiedArguments( $hash );
+		$this->assertEquals( $hash, $args->getList() );
+	}
 }
