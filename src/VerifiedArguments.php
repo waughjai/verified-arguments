@@ -10,29 +10,49 @@ namespace WaughJ\VerifiedArguments
 		//
 		/////////////////////////////////////////////////////////
 
-			public function __construct( array $args, array $defaults = [] )
+			public function __construct( array $args, array $defaults = [], bool $allowCustomArgKeys = true )
 			{
 				$this->args = [];
-				foreach ( $defaults as $default_key => $default )
+
+				// Start by setting defaults.
+				foreach ( $defaults as $defaultKey => $default )
 				{
+					// Test that default is validly formatted.
 					if ( is_array( $default ) && array_key_exists( "value", $default ) )
 					{
-						$this->args[ $default_key ] = $default[ "value" ];
+						// Set default.
+						$this->args[ $defaultKey ] = $default[ "value" ];
 					}
 				}
 
-				foreach ( $args as $arg_key => $arg_value )
+				// Then replace with custom args, if available.
+				foreach ( $args as $argKey => $argValue )
 				{
-					if ( array_key_exists( $arg_key, $defaults ) )
+					// Test validity.
+					// If default is set, check that the value fits the expected type ( if any ).
+					// If default not set, only allow if $allowCustomArgKeys is set to true.
+					$valid = false;
+					if ( array_key_exists( $argKey, $defaults ) )
 					{
-						if ( self::testExpectedType( $defaults[ $arg_key ], $arg_value ) )
+						if
+						(
+							self::testExpectedType( $defaults[ $argKey ], $argValue ) &&
+							self::testCustomTests( $defaults[ $argKey ], $argValue )
+						)
 						{
-							$this->args[ $arg_key ] = $arg_value;
+							$valid = true;
 						}
 					}
-					else
+					else if ( $allowCustomArgKeys )
 					{
-						$this->args[ $arg_key ] = $arg_value;
+						$valid = true;
+					}
+
+					if ( $valid )
+					{
+						// If defaults set, apply sanitizer ( if any ).
+						$value = ( array_key_exists( $argKey, $defaults ) ) ? self::applySanitizer( $defaults[ $argKey ], $argValue ) : $argValue;
+						$this->args[ $argKey ] = $value;
 					}
 				}
 			}
@@ -54,13 +74,15 @@ namespace WaughJ\VerifiedArguments
 		//
 		/////////////////////////////////////////////////////////
 
-			private static function testExpectedType( array $obj, $value ) : bool
+			private static function testExpectedType( array $default, $value ) : bool
 			{
-				if ( array_key_exists( "type", $obj ) )
+				// If default option has type specified, validate that the new value matches it.
+				if ( array_key_exists( "type", $default ) )
 				{
-					if ( is_array( $obj[ "type" ] ) )
+					// If array, ensure that new value is at least 1 of these types.
+					if ( is_array( $default[ "type" ] ) )
 					{
-						foreach ( $obj[ "type" ] as $type )
+						foreach ( $default[ "type" ] as $type )
 						{
 							if ( self::testType( $type, $value ) )
 							{
@@ -69,9 +91,9 @@ namespace WaughJ\VerifiedArguments
 						}
 						return false;
 					}
-					else if ( is_string( $obj[ "type" ] ) )
+					else if ( is_string( $default[ "type" ] ) )
 					{
-						return self::testType( $obj[ "type" ], $value );
+						return self::testType( $default[ "type" ], $value );
 					}
 				}
 				return true;
@@ -82,7 +104,48 @@ namespace WaughJ\VerifiedArguments
 				return gettype( $tested ) === $expected || ( is_object( $tested ) && get_class( $tested ) === $expected );
 			}
 
-			private $args;
-			private $defaults;
+			private static function testCustomTests( array $default, $value ) : bool
+			{
+				// If custom test is set, run custom test.
+				if ( array_key_exists( "test", $default ) )
+				{
+					// If test is list, run every test.
+					// If a single test fails, return false.
+					if ( is_array( $default[ "test" ] ) )
+					{
+						foreach ( $default[ "test" ] as $test )
+						{
+							if ( !call_user_func( $test, $value ) )
+							{
+								return false;
+							}
+						}
+					}
+					else
+					{
+						return call_user_func( $default[ "test" ], $value );
+					}
+				}
+
+				// If no tests, then there’s no test to fail.
+				return true;
+			}
+
+			private static function applySanitizer( array $default, $value )
+			{
+				// If default has sanitizers set, apply them all to the value before returning.
+				// Else, just return it as it is.
+				if ( array_key_exists( "sanitizer", $default ) )
+				{
+					$tests = ( is_array( $default[ "sanitizer" ] ) ) ? $default[ "sanitizer" ] : [ $default[ "sanitizer" ] ];
+					foreach ( $tests as $test )
+					{
+						$value = call_user_func( $test, $value );
+					}
+				}
+				return $value;
+			}
+
+			private array $args;
 	}
 }
